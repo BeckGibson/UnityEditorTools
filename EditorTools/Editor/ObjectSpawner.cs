@@ -81,6 +81,17 @@ public class ObjectSpawner : EditorWindow
         GUILayout.Label("Object Spawner", EditorStyles.whiteLargeLabel); //header
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos); //creates scrollbar
         objectToSpawn = EditorGUILayout.ObjectField("Object to spawn", objectToSpawn, typeof(GameObject), true) as GameObject; //object to spawn field
+        if (objectToSpawn == null)
+        {
+            GUILayout.Label("                                                   WARNING - No Object Selected!", EditorStyles.boldLabel);
+        }
+        else if (objectToSpawn.GetComponent<Renderer>() == null)
+        {
+            GUILayout.Label("WARNING - Cannot Render Realtime Spawning with Guide Material.", EditorStyles.boldLabel);
+            GUILayout.Label("Reverting to Assigned Materials.", EditorStyles.boldLabel);
+            GUILayout.Label("Object May Lack Mesh Renderer on Parent Node.", EditorStyles.boldLabel);
+            GUILayout.Label("");
+        }
 
         spawnNumber = EditorGUILayout.IntField("Spawn Count", spawnNumber); //asks how many to spawn
         objectID = EditorGUILayout.IntField("Object ID", objectID); //asks what appended ID will start counting from
@@ -155,7 +166,7 @@ public class ObjectSpawner : EditorWindow
             DeleteGhostObjects();
             SpawnObject();
         }
-        if (GUILayout.Button("Delete Last Spawn") && objectToSpawn !=null)
+        if (GUILayout.Button("Delete Last Spawn") && objectToSpawn != null)
         {
             DeleteLastSpawn();
         }
@@ -208,28 +219,36 @@ public class ObjectSpawner : EditorWindow
                     Quaternion.Euler(new Vector3(Random.Range(minValX, maxValX), Random.Range(minValY, maxValY), Random.Range(minValZ, maxValZ))));
                 //^creates each object within a random range and rotation based on the set limits
                 newObject.transform.localScale = Vector3.one * Random.Range(minScaleVal, maxScaleVal); //changes object scale randomly in range set
-                newObject.tag = "ghost";
-                Renderer rend = newObject.GetComponent<Renderer>();
-                rend.material = Resources.Load("Ghost_MAT", typeof(Material)) as Material;
+                newObject.tag = "ghost"; //assigned it the tag ghost
+                if (newObject.GetComponent<Renderer>() != null) //if the parent node has a mesh renderer
+                {
+                    Renderer rend = newObject.GetComponent<Renderer>(); //take it 
+                    rend.material = Resources.Load("Ghost_MAT", typeof(Material)) as Material; //load the ghost material onto it
+
+                }
+                else
+                {
+                    //
+                }
                 spawnCount = spawnCount - 1; //decrease spawn count
             }
         }
 
 
     }
-    private void DeleteGhostObjects()
+    private void DeleteGhostObjects() //deletes the ghost objects 
     {
-        ghostArray = GameObject.FindGameObjectsWithTag("ghost");
+        ghostArray = GameObject.FindGameObjectsWithTag("ghost"); //finds all objects tagged ghost
         if (ghostArray.Length > 0)
         {
             foreach (GameObject ghost in ghostArray)
             {
-                DestroyImmediate(ghost);
+                DestroyImmediate(ghost); //deletes each
             }
         }
 
     }
-    private void AddGhostTag()
+    private void AddGhostTag() //creates the ghost tag using the tag manager
     {
         // Open tag manager
         SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
