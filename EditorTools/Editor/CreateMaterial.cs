@@ -17,11 +17,12 @@ public class CreateMaterial : EditorWindow
     private string folderPath;
     private string materialName;
     private string baseString;
+    private string baseString2;
     public List<string> textureList = new List<string>();
     public List<string> sortedList;
     public List<List<string>> masterlist;
-    private string guiString = "";
     List<string> selectedTextures = new List<string>();
+    List<string> textureListToShow = new List<string>();
 
     [MenuItem("Editor Tools/Create Material")]
 
@@ -32,43 +33,61 @@ public class CreateMaterial : EditorWindow
     }
     private void OnGUI()
     {
-        shader = (Shader)EditorGUILayout.ObjectField(shader, typeof(Shader), false);
+        GUIStyle GetBtnStyle()
+        {
+            var style = new GUIStyle();
+            style.fontSize = 16;
+            style.normal.textColor = Color.green;
+            style.margin.left = 10;
+            style.fontStyle = FontStyle.Bold;
+            return style;
+        }
 
-        GUILayout.TextArea(guiString);
+        textureListToShow.Clear();
+        foreach (string file in textureList)
+        {
+            if (!textureListToShow.Contains(file))
+            {
+                textureListToShow.Add(file);
+            }
+        }
+        foreach (string file in textureListToShow)
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("x", GetBtnStyle(), GUILayout.Width(20)))
+            {
+                textureList.RemoveAll(x => x == file);
+            }
+            GUILayout.Label(file);
+
+            EditorGUILayout.EndHorizontal();
+        }
+        if (textureListToShow.Count == 0)
+        {
+            GUILayout.Label("No textures added.", GUILayout.Height(100));
+        }
+
 
         if (GUILayout.Button("Add Textures", GUILayout.Height(30)))
         {
-            guiString = "";
-            int count = 0;
             textureList = GetSelectedTextures(selectedTextures);
-            if (textureList != null)
-            {
-                foreach (string path in textureList)
-                {
-                    if (!String.IsNullOrEmpty(textureList[count]))
-                    {
-                        if (count != 0)
-                        {
-                            guiString = guiString + Environment.NewLine;
-                        }
-                        guiString = guiString + textureList[count];
-                        count++;
-                    }
-                }
-            }
+
         }
         if (GUILayout.Button("Clear List", GUILayout.Height(30)))
         {
-            guiString = "";
             int count = textureList.Count;
             textureList.Clear();
         }
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Overwrite Shader:");
+        shader = (Shader)EditorGUILayout.ObjectField(shader, typeof(Shader), false);
+        EditorGUILayout.EndHorizontal();
 
         if (shader != null)
         {
             if (GUILayout.Button("Create Materials", GUILayout.Height(30)))
             {
-                guiString = "";
                 while (textureList.Count > 0)
                 {
                     masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
@@ -86,7 +105,6 @@ public class CreateMaterial : EditorWindow
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Create Quest Materials", GUILayout.Height(75)))
         {
-            guiString = "";
             shader = Shader.Find("Optimised/DetailTexture");
 
             while (textureList.Count > 0)
@@ -105,10 +123,10 @@ public class CreateMaterial : EditorWindow
         }
         if (GUILayout.Button("Create Standard Materials", GUILayout.Height(75)))
         {
-            guiString = "";
             shader = Shader.Find("Standard");
             while (textureList.Count > 0)
             {
+
                 masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
                 textureList = masterlist[0]; //returned unsorted textures
                 sortedList = masterlist[1]; //returned sorted textures
