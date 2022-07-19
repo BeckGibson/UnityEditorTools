@@ -23,6 +23,7 @@ public class CreateMaterial : EditorWindow
     public List<List<string>> masterlist;
     List<string> selectedTextures = new List<string>();
     List<string> textureListToShow = new List<string>();
+    private int materialOverwriteOption = 3;
 
     [MenuItem("Editor Tools/Create Material")]
 
@@ -93,7 +94,8 @@ public class CreateMaterial : EditorWindow
                     masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
                     textureList = masterlist[0]; //returned unsorted textures
                     sortedList = masterlist[1]; //returned sorted textures
-                    sortedList = CreateNewMaterialFromList(sortedList, shader); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
+                    sortedList = masterlist[1]; //returned sorted textures
+                    sortedList = CreateNewMaterialFromList(sortedList, shader, materialOverwriteOption); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
                     if (sortedList.Count != 0) //if the returned list isn't empty
                     {
                         textureList.AddRange(sortedList); //add it back to the original texture list with the rest
@@ -112,7 +114,7 @@ public class CreateMaterial : EditorWindow
                 masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
                 textureList = masterlist[0]; //returned unsorted textures
                 sortedList = masterlist[1]; //returned sorted textures
-                sortedList = CreateNewMaterialFromList(sortedList, shader); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
+                sortedList = CreateNewMaterialFromList(sortedList, shader, materialOverwriteOption); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
                 if (sortedList.Count != 0) //if the returned list isn't empty
                 {
                     textureList.AddRange(sortedList); //add it back to the original texture list with the rest
@@ -130,7 +132,7 @@ public class CreateMaterial : EditorWindow
                 masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
                 textureList = masterlist[0]; //returned unsorted textures
                 sortedList = masterlist[1]; //returned sorted textures
-                sortedList = CreateNewMaterialFromList(sortedList, shader); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
+                sortedList = CreateNewMaterialFromList(sortedList, shader, materialOverwriteOption); //creates new material with sorted list, returns anything unused (but not textures that are accepted but unassigned due to shader constraints).
                 if (sortedList.Count != 0) //if the returned list isn't empty
                 {
                     textureList.AddRange(sortedList); //add it back to the original texture list with the rest
@@ -140,6 +142,10 @@ public class CreateMaterial : EditorWindow
             baseColor = null;
         }
         EditorGUILayout.EndHorizontal();
+        GUILayout.Label("Material Overwrite Handling:");
+        var text = new string[] { " Append textures to existing materials", " Wipe and replace existing materials", " Create new copy of material and keep original" };
+        materialOverwriteOption = GUILayout.SelectionGrid(materialOverwriteOption, text, 1, EditorStyles.radioButton);
+
     }
 
     private List<List<string>> SeperateTextures(List<string> textureList)
@@ -187,7 +193,7 @@ public class CreateMaterial : EditorWindow
         return masterList;
     }
 
-    private List<string> CreateNewMaterialFromList(List<string> textureList, Shader shader)
+    private List<string> CreateNewMaterialFromList(List<string> textureList, Shader shader, int materialOverwriteOption)
     {
 
         //gets list of related textures
@@ -362,11 +368,11 @@ public class CreateMaterial : EditorWindow
         {
             prefixName = "";
         }
-        // HEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        //
         index = textureListLower.FindIndex(x => x.Contains(prefixName + "_normal")); //find the normal map
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " normal")); 
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " normal"));
         }
         if (index == -1)
         {
@@ -761,9 +767,38 @@ public class CreateMaterial : EditorWindow
             if (matFolderExists == true)
             {
                 folderPath = folderPath + "Materials/" + materialName + ".mat";
-                if (File.Exists(folderPath))
+
+                if (File.Exists(folderPath) && materialOverwriteOption == 0) //if the file exists and we don't want to copy/replace it, load it
                 {
                     material = (Material)AssetDatabase.LoadAssetAtPath(folderPath, typeof(Material));
+                }
+                else if (!File.Exists(folderPath)) //if it doesn't exist, we create a new material
+                {
+                    material = new Material(shader);
+                    AssetDatabase.CreateAsset(material, folderPath);
+                }
+                else if (File.Exists(folderPath) && materialOverwriteOption == 1) //if it exists and we want to wipe/replace the materials
+                {
+                    AssetDatabase.DeleteAsset(folderPath); //deletes the file at the path
+                    material = new Material(shader);
+                    AssetDatabase.CreateAsset(material, folderPath);
+                }
+                else if (File.Exists(folderPath) && materialOverwriteOption == 2) //if it exists and we want to keep both copies
+                {
+                    int increment = 2;
+                    folderPath = folderPath.Remove(folderPath.Length - 8) + increment as string + "_MAT.mat"; //we add "2" to the material name
+                    if (File.Exists(folderPath)) //if it still exists
+                    {
+                        increment++;
+                        while (File.Exists(folderPath)) //keep looping until the path doesn't exist
+                        {
+                            folderPath = folderPath.Remove(folderPath.Length - 9) + increment as string + "_MAT.mat";
+                            increment++;
+                        }
+                    }
+
+                    material = new Material(shader);
+                    AssetDatabase.CreateAsset(material, folderPath);
                 }
                 else
                 {
@@ -795,6 +830,7 @@ public class CreateMaterial : EditorWindow
                 {
                     material.SetTexture("_OcclusionMap", ao);
                 }
+
             }
         }
         return textureList;
