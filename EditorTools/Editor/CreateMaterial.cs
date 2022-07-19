@@ -355,37 +355,42 @@ public class CreateMaterial : EditorWindow
                 prefixName = materialName.Remove(materialName.Length - 3);
                 prefixName = prefixName.ToLower();
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1); //removes the _ or space in the prefix name, if one has been set
 
         }
         if (baseColor == null) //couldn't find a base color map
         {
             prefixName = "";
         }
-        //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "normal")); //find the normal map
+        // HEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_normal")); //find the normal map
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains("_no."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " normal")); 
         }
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains("_n."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_no."));
         }
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains("_nm."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_n."));
         }
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains(" no."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_nm."));
         }
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains(" n."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " no."));
         }
         if (index == -1)
         {
-            index = textureListLower.FindIndex(x => x.Contains(" nm."));
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " n."));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " nm."));
         }
 
         if (index != -1)
@@ -432,18 +437,28 @@ public class CreateMaterial : EditorWindow
             else if (matches.Count == 0 || matches2.Count == 0)
             {
                 int start = materialName.IndexOf("_n");
+                if (start == -1)
+                {
+                    start = materialName.IndexOf(" n");
+                }
                 materialName = materialName.Remove(start, 2);
                 prefixName = materialName.ToLower() + "_";
                 materialName = materialName + "_MAT";
             }
             else
             {
+                prefixName = materialName.ToLower();
                 materialName = materialName + "MAT";
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1);
         }
 
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "detail")); //find the detail map
+        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_detail")); //find the detail map
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " detail"));
+        }
         if (index != -1)
         {
             detailPath = textureList[index];
@@ -466,22 +481,46 @@ public class CreateMaterial : EditorWindow
         if (baseColor == null && normal == null && detail != null) //gets material name and prefix name from detaiil map IF basecolor and normal doesn't exist
         {
             materialName = detail.name;
-            var matches = Regex.Matches(materialName, pattern);
+            var matches = Regex.Matches(materialName, pattern); //looking for _
+            var matches2 = Regex.Matches(materialName, pattern2); //looking for space
             if (matches.Count > 0)
             {
                 var match = matches[matches.Count - 1];
                 var group = match.Groups[match.Groups.Count - 1];
                 materialName = materialName.Remove(group.Index);
-                prefixName = materialName.ToUpper();
+                prefixName = materialName.ToLower();
+
                 materialName = materialName + "MAT";
+            }
+            else if (matches2.Count > 0)
+            {
+                var match = matches2[matches2.Count - 1];
+                var group = match.Groups[match.Groups.Count - 1];
+                materialName = materialName.Remove(group.Index);
+                prefixName = materialName.ToLower();
+                materialName = materialName.Remove(materialName.Length - 1) + "_MAT";
             }
             else
             {
+                prefixName = materialName.ToLower();
                 materialName = materialName + "MAT";
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "metallicsmoothness"));//find the metallicSmoothness map
+        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metallicsmoothness"));//find the metallicSmoothness map
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metallicsmoothness"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " me."));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_me."));
+        }
         if (index != -1)
         {
             metallicSmoothnessPath = textureList[index];
@@ -504,22 +543,54 @@ public class CreateMaterial : EditorWindow
         if (baseColor == null && normal == null && detail == null && metallicSmoothness != null) //gets material name and prefix name from metSmooth map IF basecolor, normal, and detail don't exist
         {
             materialName = metallicSmoothness.name;
-            var matches = Regex.Matches(materialName, pattern);
+            var matches = Regex.Matches(materialName, pattern); //looking for _
+            var matches2 = Regex.Matches(materialName, pattern2); //looking for space
             if (matches.Count > 0)
             {
                 var match = matches[matches.Count - 1];
                 var group = match.Groups[match.Groups.Count - 1];
                 materialName = materialName.Remove(group.Index);
                 prefixName = materialName.ToLower();
+
                 materialName = materialName + "MAT";
+            }
+            else if (matches2.Count > 0)
+            {
+                var match = matches2[matches2.Count - 1];
+                var group = match.Groups[match.Groups.Count - 1];
+                materialName = materialName.Remove(group.Index);
+                prefixName = materialName.ToLower();
+                materialName = materialName.Remove(materialName.Length - 1) + "_MAT";
             }
             else
             {
+                prefixName = materialName.ToLower();
                 materialName = materialName + "MAT";
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "metallic")); //find the metallic map
+        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metallic")); //find the metallic map
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metallic"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metal."));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metal."));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metalness"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metalness"));
+        }
         if (index != -1)
         {
             metallicPath = textureList[index];
@@ -542,22 +613,54 @@ public class CreateMaterial : EditorWindow
         if (baseColor == null && normal == null && detail == null && metallicSmoothness == null && metallic != null) //gets material name and prefix name from metSmooth map IF basecolor, normal, and detail don't exist
         {
             materialName = metallic.name;
-            var matches = Regex.Matches(materialName, pattern);
+            var matches = Regex.Matches(materialName, pattern); //looking for _
+            var matches2 = Regex.Matches(materialName, pattern2); //looking for space
             if (matches.Count > 0)
             {
                 var match = matches[matches.Count - 1];
                 var group = match.Groups[match.Groups.Count - 1];
                 materialName = materialName.Remove(group.Index);
-                prefixName = materialName.ToUpper();
+                prefixName = materialName.ToLower();
+
                 materialName = materialName + "MAT";
+            }
+            else if (matches2.Count > 0)
+            {
+                var match = matches2[matches2.Count - 1];
+                var group = match.Groups[match.Groups.Count - 1];
+                materialName = materialName.Remove(group.Index);
+                prefixName = materialName.ToLower();
+                materialName = materialName.Remove(materialName.Length - 1) + "_MAT";
             }
             else
             {
+                prefixName = materialName.ToLower();
                 materialName = materialName + "MAT";
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "ao")); //find the ao map
+        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_ao")); //find the ao map
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " ao"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_occlusion"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " occlusion"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_ambient"));
+        }
+        if (index == -1)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + " ambient"));
+        }
 
         if (index != -1)
         {
@@ -581,19 +684,31 @@ public class CreateMaterial : EditorWindow
         if (baseColor == null && normal == null && detail == null && metallicSmoothness == null && metallic == null && ao != null) //gets material name and prefix name from metSmooth map IF basecolor, normal, and detail don't exist
         {
             materialName = ao.name;
-            var matches = Regex.Matches(materialName, pattern);
+            var matches = Regex.Matches(materialName, pattern); //looking for _
+            var matches2 = Regex.Matches(materialName, pattern2); //looking for space
             if (matches.Count > 0)
             {
                 var match = matches[matches.Count - 1];
                 var group = match.Groups[match.Groups.Count - 1];
                 materialName = materialName.Remove(group.Index);
-                prefixName = materialName.ToUpper();
+                prefixName = materialName.ToLower();
+
                 materialName = materialName + "MAT";
+            }
+            else if (matches2.Count > 0)
+            {
+                var match = matches2[matches2.Count - 1];
+                var group = match.Groups[match.Groups.Count - 1];
+                materialName = materialName.Remove(group.Index);
+                prefixName = materialName.ToLower();
+                materialName = materialName.Remove(materialName.Length - 1) + "_MAT";
             }
             else
             {
+                prefixName = materialName.ToLower();
                 materialName = materialName + "MAT";
             }
+            prefixName = prefixName.Remove(prefixName.Length - 1);
         }
 
         folderPath = null;
@@ -680,7 +795,6 @@ public class CreateMaterial : EditorWindow
                 {
                     material.SetTexture("_OcclusionMap", ao);
                 }
-
             }
         }
         return textureList;
@@ -688,7 +802,6 @@ public class CreateMaterial : EditorWindow
 
     public static List<string> GetSelectedTextures(List<string> selectedTextures)
     {
-
         string path = null;
         int count = 0;
 
