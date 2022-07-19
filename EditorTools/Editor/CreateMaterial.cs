@@ -34,7 +34,7 @@ public class CreateMaterial : EditorWindow
     }
     private void OnGUI()
     {
-        GUIStyle GetBtnStyle()
+        GUIStyle GetBtnStyle() //button style for the X button in the texture list
         {
             var style = new GUIStyle();
             style.fontSize = 16;
@@ -44,10 +44,10 @@ public class CreateMaterial : EditorWindow
             return style;
         }
 
-        textureListToShow.Clear();
+        textureListToShow.Clear(); //wipes the list to display
         foreach (string file in textureList)
         {
-            if (!textureListToShow.Contains(file))
+            if (!textureListToShow.Contains(file)) //adds each file from the texture list to the display list if it's not shown already
             {
                 textureListToShow.Add(file);
             }
@@ -55,9 +55,9 @@ public class CreateMaterial : EditorWindow
         foreach (string file in textureListToShow)
         {
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("x", GetBtnStyle(), GUILayout.Width(20)))
+            if (GUILayout.Button("x", GetBtnStyle(), GUILayout.Width(20))) //adds a label and button to display each of the files from the display list
             {
-                textureList.RemoveAll(x => x == file);
+                textureList.RemoveAll(x => x == file); //button removes all instances of the file from the texture list
             }
             GUILayout.Label(file);
 
@@ -716,31 +716,37 @@ public class CreateMaterial : EditorWindow
             }
             prefixName = prefixName.Remove(prefixName.Length - 1);
         }
-
+        //loads the textures from the asset database if they exist
         folderPath = null;
         if (baseColor != null)
         {
             folderPath = AssetDatabase.GetAssetPath(baseColor);
+            folderPath = folderPath.Remove(folderPath.Length - baseColor.name.Length - 4); //folderpath = folder path minus the texture name and file extension (4)
         }
         else if (normal != null)
         {
             folderPath = AssetDatabase.GetAssetPath(normal);
+            folderPath = folderPath.Remove(folderPath.Length - normal.name.Length - 4);
         }
         else if (detail != null)
         {
             folderPath = AssetDatabase.GetAssetPath(detail);
+            folderPath = folderPath.Remove(folderPath.Length - detail.name.Length - 4);
         }
         else if (metallicSmoothness != null)
         {
             folderPath = AssetDatabase.GetAssetPath(metallicSmoothness);
+            folderPath = folderPath.Remove(folderPath.Length - metallicSmoothness.name.Length - 4);
         }
         else if (metallic != null)
         {
             folderPath = AssetDatabase.GetAssetPath(metallic);
+            folderPath = folderPath.Remove(folderPath.Length - metallic.name.Length - 4);
         }
         else if (ao != null)
         {
             folderPath = AssetDatabase.GetAssetPath(ao);
+            folderPath = folderPath.Remove(folderPath.Length - ao.name.Length - 4);
         }
         else
         {
@@ -751,7 +757,14 @@ public class CreateMaterial : EditorWindow
         }
         if (folderPath != null)
         {
-            folderPath = folderPath.Remove(folderPath.IndexOf("Textures"));
+            try
+            {
+                folderPath = folderPath.Remove(folderPath.IndexOf("Textures")); //if the textures are in a texture folder, we want to the material folder to be alongside it
+            }
+            catch
+            {
+                //if they aren't in a texture folder, the material folder with be made inside the same folder as the textures
+            }
             Material material;
 
             if (Directory.Exists(folderPath + "Materials/")) //does the materials folder we want exist?
@@ -805,7 +818,7 @@ public class CreateMaterial : EditorWindow
                     material = new Material(shader);
                     AssetDatabase.CreateAsset(material, folderPath);
                 }
-
+                //assign the texture maps to the materials if the material shader property will accept them and the maps exist
                 if (material.HasProperty("_MainTex") && baseColor != null)
                 {
                     material.SetTexture("_MainTex", baseColor);
@@ -836,7 +849,7 @@ public class CreateMaterial : EditorWindow
         return textureList;
     }
 
-    public static List<string> GetSelectedTextures(List<string> selectedTextures)
+    public static List<string> GetSelectedTextures(List<string> selectedTextures) //method to get the selected files from the asset window
     {
         string path = null;
         int count = 0;
