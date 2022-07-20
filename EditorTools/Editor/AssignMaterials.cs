@@ -89,7 +89,6 @@ public class AssignMaterials : EditorWindow
         foreach (string file in modelsList)
         {
             var assetImporter = AssetImporter.GetAtPath(file);
-            Debug.Log(assetImporter.ToString());
             ModelImporter modelImporter = assetImporter as ModelImporter;
             try
             {
