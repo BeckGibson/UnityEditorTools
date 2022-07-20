@@ -2,7 +2,6 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using System.Text.RegularExpressions;
-using System;
 using System.Collections.Generic;
 
 public class CreateMaterial : EditorWindow
@@ -854,10 +853,13 @@ public class CreateMaterial : EditorWindow
         string path = null;
         int count = 0;
 
-        foreach (UnityEngine.Object obj in Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets))
+        foreach (Object obj in Selection.GetFiltered(typeof(Object), SelectionMode.Assets))
         {
             path = AssetDatabase.GetAssetPath(obj);
-            selectedTextures.Add(path);
+            if (path.EndsWith(".tga") || path.EndsWith(".png") || path.EndsWith(".jpg") || path.EndsWith(".jpeg") || path.EndsWith(".tif") || path.EndsWith(".tiff"))
+            {
+                selectedTextures.Add(path);
+            }
             count++;
         }
         return selectedTextures;
