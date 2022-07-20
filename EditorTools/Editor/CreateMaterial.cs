@@ -127,7 +127,6 @@ public class CreateMaterial : EditorWindow
             shader = Shader.Find("Standard");
             while (textureList.Count > 0)
             {
-
                 masterlist = SeperateTextures(textureList); //divides textures into one sorted list for one material and the rest
                 textureList = masterlist[0]; //returned unsorted textures
                 sortedList = masterlist[1]; //returned sorted textures
@@ -144,7 +143,6 @@ public class CreateMaterial : EditorWindow
         GUILayout.Label("Material Overwrite Handling:");
         var text = new string[] { " Append textures to existing materials", " Wipe and replace existing materials", " Create new copy of material and keep original" };
         materialOverwriteOption = GUILayout.SelectionGrid(materialOverwriteOption, text, 1, EditorStyles.radioButton);
-
     }
 
     private List<List<string>> SeperateTextures(List<string> textureList)
@@ -213,6 +211,7 @@ public class CreateMaterial : EditorWindow
         string aoPath;
         List<string> textureListLower;
         bool matFolderExists = false;
+        int index = -1;
 
         textureListLower = textureList; //indentical in every way but one: lower case. So we can ignore case when searching for file names without compromising the One True File Path.
         int count = 0;
@@ -223,68 +222,24 @@ public class CreateMaterial : EditorWindow
             textureListLower[count] = textureListLower[count].ToLower();
             count++;
         }
+        string[] baseColorNames = { "basecolor", "basecolour", "base", "color", "colour", "albedo", "diffuse", "_al.", "_dif.", "_diff.", "_d.", " al.", " dif.", " d." };
+        baseColorPath = null;
+        index = -1;
 
-        int index = textureListLower.FindIndex(x => x.Contains("basecolor")); //find the BaseColor map
-
-        if (index == -1)
+        foreach (string name in baseColorNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains("basecolour"));
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the BaseColor map
+            if (index != -1)
+            {
+                baseColorPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                baseColorPath = null;
+            }
         }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("base"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("colour"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("color"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("albedo"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("diffuse"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("_al."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("_dif."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains("_d."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(" al."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(" dif."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(" d."));
-        }
-
-        if (index != -1)
-        {
-            baseColorPath = textureList[index];
-            textureList.RemoveAt(index);
-        }
-        else
-        {
-            baseColorPath = null;
-        }
-
         if (baseColorPath != null)
         {
             baseColor = (Texture2D)AssetDatabase.LoadAssetAtPath(baseColorPath, typeof(Texture2D)); //loads the texture at path
@@ -367,47 +322,25 @@ public class CreateMaterial : EditorWindow
         {
             prefixName = "";
         }
-        //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_normal")); //find the normal map
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " normal"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_no."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_n."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_nm."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " no."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " n."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " nm."));
-        }
+        //Find normal map
+        string[] normalNames = { "_normal", " normal", "_no.", "_n.", "_nm.", " no.", " n.", " nm." };
+        normalPath = null;
+        index = -1;
 
-        if (index != -1)
+        foreach (string name in normalNames)
         {
-            normalPath = textureList[index];
-            textureList.RemoveAt(index);
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the normal map
+            if (index != -1)
+            {
+                normalPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                normalPath = null;
+            }
         }
-        else
-        {
-            normalPath = null;
-        }
-
         if (normalPath != null)
         {
             normal = (Texture2D)AssetDatabase.LoadAssetAtPath(normalPath, typeof(Texture2D)); //loads the texture at path
@@ -459,21 +392,24 @@ public class CreateMaterial : EditorWindow
         }
 
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_detail")); //find the detail map
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " detail"));
-        }
-        if (index != -1)
-        {
-            detailPath = textureList[index];
-            textureList.RemoveAt(index);
-        }
-        else
-        {
-            detailPath = null;
-        }
+        string[] detailNames = { "_detail", " detail" };
+        detailPath = null;
+        index = -1;
 
+        foreach (string name in detailNames)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            if (index != -1)
+            {
+                detailPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                detailPath = null;
+            }
+        }
         if (detailPath != null)
         {
             detail = (Texture2D)AssetDatabase.LoadAssetAtPath(detailPath, typeof(Texture2D)); //loads the texture at path
@@ -513,29 +449,25 @@ public class CreateMaterial : EditorWindow
             prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metallicsmoothness"));//find the metallicSmoothness map
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metallicsmoothness"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " me."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_me."));
-        }
-        if (index != -1)
-        {
-            metallicSmoothnessPath = textureList[index];
-            textureList.RemoveAt(index);
-        }
-        else
-        {
-            metallicSmoothnessPath = null;
-        }
 
+        string[] metSmoothNames = { "_metallicsmoothness", " metallicsmoothness", " me.", "_me." };
+        metallicSmoothnessPath = null;
+        index = -1;
+
+        foreach (string name in metSmoothNames)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            if (index != -1)
+            {
+                metallicSmoothnessPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                metallicSmoothnessPath = null;
+            }
+        }
         if (metallicSmoothnessPath != null)
         {
             metallicSmoothness = (Texture2D)AssetDatabase.LoadAssetAtPath(metallicSmoothnessPath, typeof(Texture2D)); //loads the texture at path
@@ -575,37 +507,24 @@ public class CreateMaterial : EditorWindow
             prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metallic")); //find the metallic map
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metallic"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metal."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metal."));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " metalness"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_metalness"));
-        }
-        if (index != -1)
-        {
-            metallicPath = textureList[index];
-            textureList.RemoveAt(index);
-        }
-        else
-        {
-            metallicPath = null;
-        }
+        string[] metNames = { "_metallic", " metallic", " metal.", "_metal.", " metalness", "_metalness", " metallness", "_metallness" };
+        metallicPath = null;
+        index = -1;
 
+        foreach (string name in metNames)
+        {
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            if (index != -1)
+            {
+                metallicPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                metallicPath = null;
+            }
+        }
         if (metallicPath != null)
         {
             metallic = (Texture2D)AssetDatabase.LoadAssetAtPath(metallicPath, typeof(Texture2D)); //loads the texture at path
@@ -645,38 +564,24 @@ public class CreateMaterial : EditorWindow
             prefixName = prefixName.Remove(prefixName.Length - 1);
         }
         //
-        index = textureListLower.FindIndex(x => x.Contains(prefixName + "_ao")); //find the ao map
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " ao"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_occlusion"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " occlusion"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + "_ambient"));
-        }
-        if (index == -1)
-        {
-            index = textureListLower.FindIndex(x => x.Contains(prefixName + " ambient"));
-        }
+        string[] aoNames = { "_ao", " ao", "_occlusion", " occlusion", "_ambient", " ambient" };
+        aoPath = null;
+        index = -1;
 
-        if (index != -1)
+        foreach (string name in aoNames)
         {
-            aoPath = textureList[index];
-            textureList.RemoveAt(index);
+            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            if (index != -1)
+            {
+                aoPath = textureList[index];
+                textureList.RemoveAt(index);
+                break;
+            }
+            else
+            {
+                aoPath = null;
+            }
         }
-        else
-        {
-            aoPath = null;
-        }
-
         if (aoPath != null)
         {
             ao = (Texture2D)AssetDatabase.LoadAssetAtPath(aoPath, typeof(Texture2D)); //loads the texture at path
