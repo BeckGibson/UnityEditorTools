@@ -329,7 +329,7 @@ public class CreateMaterial : EditorWindow
 
         foreach (string name in normalNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains(name)); //find the normal map
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + name)); //find the normal map
             if (index != -1)
             {
                 normalPath = textureList[index];
@@ -398,7 +398,7 @@ public class CreateMaterial : EditorWindow
 
         foreach (string name in detailNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + name)); //find the detail map
             if (index != -1)
             {
                 detailPath = textureList[index];
@@ -456,7 +456,7 @@ public class CreateMaterial : EditorWindow
 
         foreach (string name in metSmoothNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + name)); //find the detail map
             if (index != -1)
             {
                 metallicSmoothnessPath = textureList[index];
@@ -513,7 +513,7 @@ public class CreateMaterial : EditorWindow
 
         foreach (string name in metNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + name)); //find the detail map
             if (index != -1)
             {
                 metallicPath = textureList[index];
@@ -570,7 +570,7 @@ public class CreateMaterial : EditorWindow
 
         foreach (string name in aoNames)
         {
-            index = textureListLower.FindIndex(x => x.Contains(name)); //find the detail map
+            index = textureListLower.FindIndex(x => x.Contains(prefixName + name)); //find the detail map
             if (index != -1)
             {
                 aoPath = textureList[index];
